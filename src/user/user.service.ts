@@ -1,29 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'src/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-  users: string[] = ['abc', 'def', 'ghi'];
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
 
-  getUsers(): string[] {
-    return this.users;
+  async getUsers(): Promise<UserEntity[]> {
+    const users = await this.userRepository.find();
+    return users;
   }
 
-  async addUser(name: string): Promise<string[]> {
-    if (!this.users.includes[name]) {
-      await this.users.push(name);
+  async findByEmail(email: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user;
+  }
+
+  async addUser(info: UserEntity): Promise<UserEntity | void> {
+    if (!(await this.findByEmail(info.email))) {
+      const user = this.userRepository.create(info);
+      return await this.userRepository.save(user);
+    } else {
+      throw new HttpException('user already exists', 409);
     }
-
-    return this.users;
   }
 
-  async deleteUser(name: string): Promise<string[]> {
-    if (this.users.includes(name)) {
-      await this.users.splice(this.users.indexOf(name), 1);
+  async deleteUser(email: string): Promise<void> {
+    if (await this.findByEmail(email)) {
+      await this.userRepository.delete({ email });
+    } else {
+      throw new HttpException('user not found', 404);
     }
-    return this.users;
   }
 
-  getUserName(index: number): string {
-    return this.users[index];
+  async updatePassword(email: string, password: string): Promise<void> {
+    if (await this.findByEmail(email)) {
+      await this.userRepository.update({ email }, { password });
+    } else {
+      throw new HttpException('user not found', 404);
+    }
   }
 }
