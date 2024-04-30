@@ -1,2 +1,2 @@
-import { UserEntity } from "./user.entity";
-import { PostEntity } from "./post.entity";
+import { UserEntity } from './user.entity';
+import { PostEntity } from './post.entity';
