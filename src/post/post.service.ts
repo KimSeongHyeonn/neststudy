@@ -1,47 +1,44 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from 'src/entities/post.entity';
-import { Repository } from 'typeorm';
+import { PostResponseDto } from './dtos/post.response.dto';
+import {
+  ContentRequestDto,
+  IdRequestDto,
+  PostRequestDto,
+} from './dtos/post.request.dto';
+import { PostRepository } from 'src/repositories/post.repository';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostEntity)
-    private readonly postRepository: Repository<PostEntity>,
+    private readonly postRepository: PostRepository,
   ) {}
 
-  async getPosts(): Promise<PostEntity[]> {
-    const posts = await this.postRepository.find();
+  async getPosts(): Promise<PostResponseDto[]> {
+    const postEntitiess = await this.postRepository.findAll();
+    const posts = postEntitiess.map((post) => new PostResponseDto(post));
     return posts;
   }
 
-  async findById(id: number): Promise<PostEntity> {
-    const post = await this.postRepository.findOne({ where: { id } });
+  async findById(body: IdRequestDto): Promise<PostResponseDto> {
+    const postEntity = await this.postRepository.findById(body.id);
+    const post = new PostResponseDto(postEntity);
     return post;
   }
 
-  async addPost(info: PostEntity): Promise<PostEntity | void> {
-    if (!(await this.findById(info.id))) {
-      const post = this.postRepository.create(info);
-      return await this.postRepository.save(post);
-    } else {
-      throw new HttpException('post already exists', 409);
-    }
+  async addPost(body: PostRequestDto): Promise<PostResponseDto> {
+    const newPostEntity = await this.postRepository.create(body);
+    const newPost = new PostResponseDto(newPostEntity);
+    return newPost;
   }
 
-  async deletePost(id: number): Promise<void> {
-    if (await this.findById(id)) {
-      await this.postRepository.delete({ id });
-    } else {
-      throw new HttpException('post not found', 404);
-    }
+  async deletePost(body: IdRequestDto): Promise<void> {
+    await this.postRepository.deleteById(body.id);
   }
 
-  async updateTitle(id: number, title: string): Promise<void> {
-    if (await this.findById(id)) {
-      await this.postRepository.update({ id }, { title });
-    } else {
-      throw new HttpException('post not found', 404);
-    }
+  async updateContent(body: ContentRequestDto): Promise<void> {
+    await this.postRepository.updateContent(body.id, body.title, body.content);
   }
 }
