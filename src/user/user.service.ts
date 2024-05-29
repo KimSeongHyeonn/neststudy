@@ -6,6 +6,7 @@ import {
   PasswordRequestDto,
   UserRequestDto,
 } from './dtos/user.request.dto';
+import { UserEntity } from 'src/entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -17,10 +18,14 @@ export class UserService {
     return users;
   }
 
-  async findByEmail(body: EmailRequestDto): Promise<UserResponseDto> {
-    const userEntity = await this.userRepository.findByEmail(body.email);
-    const user = new UserResponseDto(userEntity);
-    return user;
+  async findByEmail(email: string): Promise<UserEntity> {
+    const userEntity = await this.userRepository.findByEmail(email);
+    return userEntity;
+  }
+
+  async findByVal(key: keyof UserEntity, val: any): Promise<UserEntity> {
+    const userEntity = this.userRepository.findByVal(key, val);
+    return userEntity;
   }
 
   async addUser(body: UserRequestDto): Promise<UserResponseDto> {
@@ -35,5 +40,9 @@ export class UserService {
 
   async updatePassword(body: PasswordRequestDto): Promise<void> {
     await this.userRepository.updatePassword(body.email, body.password);
+  }
+
+  async updateToken(email: string, token: string): Promise<void> {
+    await this.userRepository.updateToken(email, token);
   }
 }

@@ -50,4 +50,19 @@ export class UserRepository {
       throw new HttpException('user not found', 404);
     }
   }
+
+  async updateToken(email: string, token: string): Promise<void> {
+    if (await this.existsByEmail(email)) {
+      await this.userRepository.update({ email }, { token });
+    } else {
+      throw new HttpException('user not found', 404);
+    }
+  }
+
+  async findByVal(key: keyof UserEntity, val: any): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({
+      where: { [key]: val },
+    });
+    return user;
+  }
 }
