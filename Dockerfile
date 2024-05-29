@@ -2,7 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-ADD ./app/
+ADD . /app/
 
 RUN npm install
 
