@@ -5,7 +5,7 @@ on:
     branches: ['main']
 
 env:
-  DOCKER_IMAGE: ghcr.io/KimSeongHyeonn/bestudy
+  DOCKER_IMAGE: ghcr.io/kimseonghyeonn/bestudy
   DOCKER_CONTAINER: bestudy
 
 jobs:
